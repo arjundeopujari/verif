@@ -56,8 +56,10 @@ module testbench
 
     // Input Signals (from DUT outputs)
     input logic signed   [SIGFIG-1:0]   hit_R18S[AXIS-1:0],       // Hit Location
+    input logic signed   [SIGFIG-1:0]   hit_R18S_2[AXIS-1:0],       // Hit Location
     input logic unsigned [SIGFIG-1:0]   color_R18U[COLORS-1:0],  // Color of triangle
-    input logic                         hit_valid_R18H            // Is this a hit?
+    input logic                         hit_valid_R18H,            // Is this a hit?
+    input logic                         hit_valid_R18H_2            // Is this a hit?
 );
 
     localparam DETAILED_LOGGING = 0; // Turn this to 1 for detailed logging
@@ -125,8 +127,10 @@ module testbench
         .ss_w_lg2_RnnnnS    (ss_w_lg2_RnnnnS    ),
 
         .hit_R18S           (hit_R18S           ), // Sample Location and depth
+        .hit_R18S_2           (hit_R18S_2           ), // Sample Location and depth
         .color_R18U         (color_R18U         ), // Color of Sample Hit
-        .hit_valid_R18H     (hit_valid_R18H     )  // Is sample hit valid
+        .hit_valid_R18H     (hit_valid_R18H     ),  // Is sample hit valid
+        .hit_valid_R18H_2     (hit_valid_R18H_2     )  // Is sample hit valid
     );
 
     /*****************************************

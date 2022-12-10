@@ -92,8 +92,10 @@ module zbuff
     input int                           ss_w_lg2_RnnnnS,
 
     input logic signed   [SIGFIG-1:0] hit_R18S[AXIS-1:0],
+    input logic signed   [SIGFIG-1:0] hit_R18S_2[AXIS-1:0],
     input logic unsigned [SIGFIG-1:0] color_R18U[COLORS-1:0],
-    input logic                           hit_valid_R18H
+    input logic                           hit_valid_R18H,
+    input logic                           hit_valid_R18H_2
 );
 
     logic unsigned [FB_L2-1:0]  x_ind;
@@ -102,6 +104,12 @@ module zbuff
     logic unsigned [SS_L2-1:0]  y_ss_ind;
     logic unsigned [SIGFIG-1:0] depth;
     logic unsigned [SIGFIG-1:0] color[COLORS-1:0];
+
+    logic unsigned [FB_L2-1:0]  x_ind_2;
+    logic unsigned [FB_L2-1:0]  y_ind_2;
+    logic unsigned [SS_L2-1:0]  x_ss_ind_2;
+    logic unsigned [SS_L2-1:0]  y_ss_ind_2;
+    logic unsigned [SIGFIG-1:0] depth_2;
 
     int unsigned     x_max;
     int unsigned     y_max;
@@ -117,6 +125,10 @@ module zbuff
     assign  depth = unsigned'(hit_R18S[2]);
     assign  x_ind = hit_R18S[0][(RADIX+FB_L2-1):RADIX];
     assign  y_ind = hit_R18S[1][(RADIX+FB_L2-1):RADIX];
+
+    assign  depth_2 = unsigned'(hit_R18S_2[2]);
+    assign  x_ind_2 = hit_R18S_2[0][(RADIX+FB_L2-1):RADIX];
+    assign  y_ind_2 = hit_R18S_2[1][(RADIX+FB_L2-1):RADIX];
 
     //Brittle Only works for COLORS=3
     assign color[0] = color_R18U[0];
@@ -136,10 +148,24 @@ module zbuff
         endcase // case ( subSample_RnnnnU )
 
         unique case ( subSample_RnnnnU )
+            (4'b1000 ): x_ss_ind_2[SS_L2-1:0] =   zero[SS_L2-1:0];
+            (4'b0100 ): x_ss_ind_2[SS_L2-1:0] = { zero[SS_L2-1:1] , hit_R18S_2[0][RADIX-1] };
+            (4'b0010 ): x_ss_ind_2[SS_L2-1:0] = { zero[SS_L2-1:1] , hit_R18S_2[0][RADIX-1:RADIX-2] };
+            (4'b0001 ): x_ss_ind_2[SS_L2-1:0] = {                   hit_R18S_2[0][RADIX-1:RADIX-3] };
+        endcase // case ( subSample_RnnnnU )
+
+        unique case ( subSample_RnnnnU )
             (4'b1000 ): y_ss_ind[SS_L2-1:0] =   zero[SS_L2-1:0] ;
             (4'b0100 ): y_ss_ind[SS_L2-1:0] = { zero[SS_L2-1:1] , hit_R18S[1][RADIX-1] }  ;
             (4'b0010 ): y_ss_ind[SS_L2-1:0] = { zero[SS_L2-1:1] , hit_R18S[1][RADIX-1:RADIX-2] }  ;
             (4'b0001 ): y_ss_ind[SS_L2-1:0] = {                   hit_R18S[1][RADIX-1:RADIX-3] }  ;
+        endcase // case ( subSample_RnnnnU )
+
+        unique case ( subSample_RnnnnU )
+            (4'b1000 ): y_ss_ind_2[SS_L2-1:0] =   zero[SS_L2-1:0] ;
+            (4'b0100 ): y_ss_ind_2[SS_L2-1:0] = { zero[SS_L2-1:1] , hit_R18S_2[1][RADIX-1] }  ;
+            (4'b0010 ): y_ss_ind_2[SS_L2-1:0] = { zero[SS_L2-1:1] , hit_R18S_2[1][RADIX-1:RADIX-2] }  ;
+            (4'b0001 ): y_ss_ind_2[SS_L2-1:0] = {                   hit_R18S_2[1][RADIX-1:RADIX-3] }  ;
         endcase // case ( subSample_RnnnnU )
 
         unique case ( subSample_RnnnnU )
@@ -171,6 +197,19 @@ module zbuff
                 color[2]  //actually a ushort
             ) ;
         end
+        
+        if( hit_valid_R18H_2 && ~rst ) begin
+            check_zbuff_process_fragment(  x_ind_2 ,   //Hit Loc. X
+                y_ind_2 ,   //Hit Loc. Y
+                x_ss_ind_2 ,  //SS Hit loc X
+                y_ss_ind_2 ,  //SS Hit Loc Y
+                depth_2 , //actually a uint
+                color[0] , //actually a ushort
+                color[1] , //actually a ushort
+                color[2]  //actually a ushort
+            ) ;
+        end
+        
     end
 
     task init_buffers;
